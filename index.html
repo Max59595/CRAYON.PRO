@@ -40,20 +40,20 @@
             </div>
         </div>
 
-        <!-- SECTION ACTIONNARIAT (PLAFOND 35 % + 0,05 € / PART) -->
+        <!-- SECTION ACTIONNARIAT (PLAFOND 35 % + 0,05 € / PART DE 0,05 %) -->
         <div class="invest-box">
             <div class="invest-header">
                 <span class="invest-tag">CAPITAL OUVERT • MAX 35 % PAR INVESTISSEUR</span>
                 <h2>Devenez propriétaire du Crayon</h2>
-                <p>Sélectionnez votre participation dans <strong>CRAYON.PRO</strong> (5 % par part, limité à 35 % maximum au total).</p>
+                <p>Sélectionnez votre participation dans <strong>CRAYON.PRO</strong> (0,05 % par part, limité à 35 % maximum au total).</p>
             </div>
 
             <!-- Sélecteur de quantité -->
             <div class="selector-row">
-                <span>Nombre de parts (5 % / part) :</span>
+                <span>Nombre de parts (0,05 % / part) :</span>
                 <div class="qty-controls">
                     <button type="button" class="qty-btn" id="minus-btn" disabled>−</button>
-                    <span id="qty-display">1 part (5 %)</span>
+                    <span id="qty-display">1 part (0,05 %)</span>
                     <button type="button" class="qty-btn" id="plus-btn">+</button>
                 </div>
             </div>
@@ -61,11 +61,11 @@
             <div class="invest-action">
                 <div class="price-info">
                     <span class="price" id="total-price">0,05 €</span>
-                    <span class="unit" id="share-desc">Pour 5 % du CRAYON.PRO (Plafond : 35 %)</span>
+                    <span class="unit" id="share-desc">Pour 0,05 % du CRAYON.PRO (Plafond : 35 %)</span>
                 </div>
 
                 <a class="btn-invest" id="mail-link" href="#">
-                    ✉️ Acheter <span id="btn-percent">5 %</span> du CRAYON.PRO
+                    ✉️ Acheter <span id="btn-percent">0,05 %</span> du CRAYON.PRO
                 </a>
             </div>
             <p class="invest-note">En cliquant, votre messagerie s'ouvrira pour contacter directement le propriétaire.</p>
@@ -143,9 +143,9 @@
             isPainting = false;
         });
 
-        // --- LOGIQUE SÉLECTEUR D'ACTIONS (MAX 35 % = 7 PARTS DE 5 %) ---
+        // --- LOGIQUE SÉLECTEUR D'ACTIONS (MAX 35 % = 700 PARTS DE 0,05 %) ---
         let parts = 1;
-        const maxParts = 7; // 7 * 5% = 35% maximum
+        const maxParts = 700; // 700 * 0,05 % = 35 % maximum
         const ownerEmail = "max.paggi@stanislas-cannes.com";
 
         const minusBtn = document.getElementById('minus-btn');
@@ -157,23 +157,23 @@
         const mailLink = document.getElementById('mail-link');
 
         function updateOrder() {
-            const percent = parts * 5;
+            const percentFormatted = (parts * 0.05).toFixed(2).replace('.', ',');
             const priceFormatted = (parts * 0.05).toFixed(2).replace('.', ',') + ' €';
             const partLabel = parts > 1 ? 'parts' : 'part';
 
-            qtyDisplay.textContent = `${parts} ${partLabel} (${percent} %)`;
+            qtyDisplay.textContent = `${parts} ${partLabel} (${percentFormatted} %)`;
             totalPriceEl.textContent = priceFormatted;
-            shareDescEl.textContent = `Pour ${percent} % du CRAYON.PRO (Maximum autorisé : 35 %)`;
-            btnPercentEl.textContent = `${percent} %`;
+            shareDescEl.textContent = `Pour ${percentFormatted} % du CRAYON.PRO (Maximum autorisé : 35 %)`;
+            btnPercentEl.textContent = `${percentFormatted} %`;
 
-            // Blocage des boutons aux limites (1 part min, 7 parts max)
+            // Blocage des boutons aux limites (1 part min, 700 parts max)
             minusBtn.disabled = (parts <= 1);
             plusBtn.disabled = (parts >= maxParts);
 
             // Mise à jour dynamique du lien mailto
-            const subject = encodeURIComponent(`Achat de ${percent} % de CRAYON.PRO (${priceFormatted})`);
+            const subject = encodeURIComponent(`Achat de ${percentFormatted} % de CRAYON.PRO (${priceFormatted})`);
             const body = encodeURIComponent(
-                `Bonjour,\n\nJe souhaite acheter ${parts} ${partLabel} (soit ${percent} %) de l'entreprise CRAYON.PRO au prix total de ${priceFormatted}.\n\nMerci de m'indiquer la démarche à suivre pour finaliser mon achat.\n\nCordialement,`
+                `Bonjour,\n\nJe souhaite acheter ${parts} ${partLabel} (soit ${percentFormatted} %) de l'entreprise CRAYON.PRO au prix total de ${priceFormatted}.\n\nMerci de m'indiquer la démarche à suivre pour finaliser mon achat.\n\nCordialement,`
             );
             mailLink.href = `mailto:${ownerEmail}?subject=${subject}&body=${body}`;
         }
