@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRAYON.PRO — La Révolution</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <canvas id="draw-canvas"></canvas>
+
+    <nav>
+        <div class="logo">CRAYON<span>.PRO</span></div>
+        <div>
+            <button class="btn-draw" id="toggle-draw">✏️ Tester la mine</button>
+            <button class="btn-draw" id="clear-draw" style="display:none; margin-left:8px;">Effacer</button>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="badge">Édition Originale • Graphite Pur</div>
+        <h1>Un crayon, un seul, une révolution.</h1>
+        <p class="subtitle">
+            Zéro batterie. Zéro latence. Une autonomie de 56 kilomètres d'écriture continue dans une architecture hexagonale vert et noir.
+        </p>
+
+        <div class="pencil-stage" title="Survolez pour inspecter">
+            <div class="pencil-3d">
+                <div class="pencil-end"></div>
+                <div class="pencil-body">
+                    <div class="stripe-top"></div>
+                    <div class="stripe-mid">
+                        <span class="pencil-stamp">CRAYON.PRO • HB 2</span>
+                    </div>
+                    <div class="stripe-bot"></div>
+                </div>
+                <div class="pencil-wood"></div>
+                <div class="pencil-lead"></div>
+            </div>
+        </div>
+
+        <!-- SECTION ACTIONNARIAT (PLAFOND 35 % + 0,05 € / PART) -->
+        <div class="invest-box">
+            <div class="invest-header">
+                <span class="invest-tag">CAPITAL OUVERT • MAX 35 % PAR INVESTISSEUR</span>
+                <h2>Devenez propriétaire du Crayon</h2>
+                <p>Sélectionnez votre participation dans <strong>CRAYON.PRO</strong> (5 % par part, limité à 35 % maximum au total).</p>
+            </div>
+
+            <!-- Sélecteur de quantité -->
+            <div class="selector-row">
+                <span>Nombre de parts (5 % / part) :</span>
+                <div class="qty-controls">
+                    <button type="button" class="qty-btn" id="minus-btn" disabled>−</button>
+                    <span id="qty-display">1 part (5 %)</span>
+                    <button type="button" class="qty-btn" id="plus-btn">+</button>
+                </div>
+            </div>
+
+            <div class="invest-action">
+                <div class="price-info">
+                    <span class="price" id="total-price">0,05 €</span>
+                    <span class="unit" id="share-desc">Pour 5 % du CRAYON.PRO (Plafond : 35 %)</span>
+                </div>
+
+                <a class="btn-invest" id="mail-link" href="#">
+                    ✉️ Acheter <span id="btn-percent">5 %</span> du CRAYON.PRO
+                </a>
+            </div>
+            <p class="invest-note">En cliquant, votre messagerie s'ouvrira pour contacter directement le propriétaire.</p>
+        </div>
+    </section>
+
+    <section class="specs">
+        <div class="card">
+            <h3>0 ms</h3>
+            <h4>Latence absolue</h4>
+            <p>Transfert instantané de la pensée au papier grâce à la technologie de friction carbone.</p>
+        </div>
+        <div class="card">
+            <h3>HB</h3>
+            <h4>Équilibre parfait</h4>
+            <p>Alliage optimal entre dureté et noirceur pour le croquis comme pour les notes.</p>
+        </div>
+        <div class="card">
+            <h3>6 Faces</h3>
+            <h4>Grip ergonomique</h4>
+            <p>Profil hexagonal anti-roulement avec finition laquée vert profond et arêtes noires.</p>
+        </div>
+    </section>
+
+    <footer>
+        CRAYON.PRO Inc. • Compatible avec toutes les feuilles de papier • Aucun abonnement requis.
+    </footer>
+
+    <script>
+        // --- LOGIQUE DESSIN ---
+        const canvas = document.getElementById('draw-canvas');
+        const ctx = canvas.getContext('2d');
+        const toggleBtn = document.getElementById('toggle-draw');
+        const clearBtn = document.getElementById('clear-draw');
+
+        let isDrawingMode = false;
+        let isPainting = false;
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        toggleBtn.addEventListener('click', () => {
+            isDrawingMode = !isDrawingMode;
+            document.body.classList.toggle('drawing-mode', isDrawingMode);
+            toggleBtn.classList.toggle('active', isDrawingMode);
+            toggleBtn.textContent = isDrawingMode ? 'Arrêter de dessiner' : '✏️ Tester la mine';
+            clearBtn.style.display = isDrawingMode ? 'inline-block' : 'none';
+        });
+
+        clearBtn.addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (!isDrawingMode) return;
+            isPainting = true;
+            ctx.beginPath();
+            ctx.moveTo(e.clientX, e.clientY);
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isPainting || !isDrawingMode) return;
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = 'rgba(220, 220, 225, 0.75)';
+            ctx.lineTo(e.clientX, e.clientY);
+            ctx.stroke();
+        });
+
+        window.addEventListener('mouseup', () => {
+            isPainting = false;
+        });
+
+        // --- LOGIQUE SÉLECTEUR D'ACTIONS (MAX 35 % = 7 PARTS DE 5 %) ---
+        let parts = 1;
+        const maxParts = 7; // 7 * 5% = 35% maximum
+        const ownerEmail = "max.paggi@stanislas-cannes.com";
+
+        const minusBtn = document.getElementById('minus-btn');
+        const plusBtn = document.getElementById('plus-btn');
+        const qtyDisplay = document.getElementById('qty-display');
+        const totalPriceEl = document.getElementById('total-price');
+        const shareDescEl = document.getElementById('share-desc');
+        const btnPercentEl = document.getElementById('btn-percent');
+        const mailLink = document.getElementById('mail-link');
+
+        function updateOrder() {
+            const percent = parts * 5;
+            const priceFormatted = (parts * 0.05).toFixed(2).replace('.', ',') + ' €';
+            const partLabel = parts > 1 ? 'parts' : 'part';
+
+            qtyDisplay.textContent = `${parts} ${partLabel} (${percent} %)`;
+            totalPriceEl.textContent = priceFormatted;
+            shareDescEl.textContent = `Pour ${percent} % du CRAYON.PRO (Maximum autorisé : 35 %)`;
+            btnPercentEl.textContent = `${percent} %`;
+
+            // Blocage des boutons aux limites (1 part min, 7 parts max)
+            minusBtn.disabled = (parts <= 1);
+            plusBtn.disabled = (parts >= maxParts);
+
+            // Mise à jour dynamique du lien mailto
+            const subject = encodeURIComponent(`Achat de ${percent} % de CRAYON.PRO (${priceFormatted})`);
+            const body = encodeURIComponent(
+                `Bonjour,\n\nJe souhaite acheter ${parts} ${partLabel} (soit ${percent} %) de l'entreprise CRAYON.PRO au prix total de ${priceFormatted}.\n\nMerci de m'indiquer la démarche à suivre pour finaliser mon achat.\n\nCordialement,`
+            );
+            mailLink.href = `mailto:${ownerEmail}?subject=${subject}&body=${body}`;
+        }
+
+        minusBtn.addEventListener('click', () => {
+            if (parts > 1) {
+                parts--;
+                updateOrder();
+            }
+        });
+
+        plusBtn.addEventListener('click', () => {
+            if (parts < maxParts) {
+                parts++;
+                updateOrder();
+            }
+        });
+
+        // Initialisation au chargement
+        updateOrder();
+    </script>
+</body>
+</html>
