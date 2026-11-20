@@ -48,6 +48,12 @@ nav {
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .logo {
     font-weight: 800;
     letter-spacing: 2px;
@@ -58,7 +64,7 @@ nav {
     color: var(--accent);
 }
 
-.btn-draw {
+.btn-draw, .btn-auth, .btn-logout {
     background: rgba(255, 255, 255, 0.1);
     color: var(--text-main);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -70,12 +76,143 @@ nav {
     transition: all 0.3s ease;
 }
 
-.btn-draw:hover, .btn-draw.active {
+.btn-draw:hover, .btn-draw.active, .btn-auth:hover {
     background: var(--accent);
     color: #000;
     border-color: var(--accent);
 }
 
+.btn-auth {
+    border-color: rgba(34, 197, 94, 0.5);
+    color: var(--accent);
+}
+
+.btn-logout:hover {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: #fff;
+}
+
+.user-badge {
+    font-size: 0.85rem;
+    color: var(--accent);
+    background: rgba(34, 197, 94, 0.1);
+    padding: 6px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+/* MODALE AUTHENTIFICATION */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+.modal-box {
+    background: #121513;
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    border-radius: 24px;
+    padding: 36px;
+    max-width: 420px;
+    width: 100%;
+    position: relative;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.9);
+}
+
+.close-modal {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.8rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.close-modal:hover {
+    color: var(--text-main);
+}
+
+.modal-box h2 {
+    font-size: 1.6rem;
+    margin: 6px 0 8px;
+}
+
+.modal-box p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
+
+.input-group {
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.4);
+    color: var(--text-main);
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.input-group input:focus {
+    border-color: var(--accent);
+}
+
+.auth-msg {
+    font-size: 0.85rem !important;
+    min-height: 20px;
+    margin-bottom: 14px !important;
+}
+
+.modal-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.btn-secondary {
+    width: 100%;
+    padding: 12px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-main);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* HERO & RESTE DU SITE */
 .hero {
     position: relative;
     z-index: 10;
@@ -227,7 +364,6 @@ h1 {
     margin-bottom: 20px;
 }
 
-/* Sélecteur de quantité */
 .selector-row {
     display: flex;
     justify-content: space-between;

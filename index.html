@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CRAYON.PRO — La Révolution</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Importation de Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -12,11 +14,46 @@
 
     <nav>
         <div class="logo">CRAYON<span>.PRO</span></div>
-        <div>
+        <div class="nav-actions">
             <button class="btn-draw" id="toggle-draw">✏️ Tester la mine</button>
             <button class="btn-draw" id="clear-draw" style="display:none; margin-left:8px;">Effacer</button>
+            
+            <!-- Boutons d'authentification -->
+            <button class="btn-auth" id="open-auth-btn">👤 Connexion</button>
+            <div id="user-profile" style="display:none; align-items:center; gap:10px;">
+                <span id="user-email-display" class="user-badge"></span>
+                <button class="btn-logout" id="logout-btn">Déconnexion</button>
+            </div>
         </div>
     </nav>
+
+    <!-- MODALE CONNEXION / INSCRIPTION -->
+    <div id="auth-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-box">
+            <button class="close-modal" id="close-auth-btn">&times;</button>
+            <div class="invest-tag">ESPACE ACTIONNAIRE</div>
+            <h2 id="modal-title">Rejoindre CRAYON.PRO</h2>
+            <p id="modal-subtitle">Créez un compte ou connectez-vous pour gérer vos parts.</p>
+            
+            <form id="auth-form">
+                <div class="input-group">
+                    <label>Adresse Email</label>
+                    <input type="email" id="auth-email" placeholder="exemple@email.com" required>
+                </div>
+                <div class="input-group">
+                    <label>Mot de passe (6 caractères min.)</label>
+                    <input type="password" id="auth-password" placeholder="••••••••" minlength="6" required>
+                </div>
+                
+                <p id="auth-message" class="auth-msg"></p>
+
+                <div class="modal-buttons">
+                    <button type="submit" id="btn-login" class="btn-invest" style="width:100%; border:none; cursor:pointer;">Se connecter</button>
+                    <button type="button" id="btn-signup" class="btn-secondary">Créer un compte</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <section class="hero">
         <div class="badge">Édition Originale • Graphite Pur</div>
@@ -40,20 +77,20 @@
             </div>
         </div>
 
-        <!-- SECTION ACTIONNARIAT (PLAFOND 35 % + 0,05 € / PART DE 0,05 %) -->
+        <!-- SECTION ACTIONNARIAT (PLAFOND 35 % + 0,05 € / PART) -->
         <div class="invest-box">
             <div class="invest-header">
                 <span class="invest-tag">CAPITAL OUVERT • MAX 35 % PAR INVESTISSEUR</span>
                 <h2>Devenez propriétaire du Crayon</h2>
-                <p>Sélectionnez votre participation dans <strong>CRAYON.PRO</strong> (0,05 % par part, limité à 35 % maximum au total).</p>
+                <p>Sélectionnez votre participation dans <strong>CRAYON.PRO</strong> (5 % par part, limité à 35 % maximum au total).</p>
             </div>
 
             <!-- Sélecteur de quantité -->
             <div class="selector-row">
-                <span>Nombre de parts (0,05 % / part) :</span>
+                <span>Nombre de parts (5 % / part) :</span>
                 <div class="qty-controls">
                     <button type="button" class="qty-btn" id="minus-btn" disabled>−</button>
-                    <span id="qty-display">1 part (0,05 %)</span>
+                    <span id="qty-display">1 part (5 %)</span>
                     <button type="button" class="qty-btn" id="plus-btn">+</button>
                 </div>
             </div>
@@ -61,14 +98,14 @@
             <div class="invest-action">
                 <div class="price-info">
                     <span class="price" id="total-price">0,05 €</span>
-                    <span class="unit" id="share-desc">Pour 0,05 % du CRAYON.PRO (Plafond : 35 %)</span>
+                    <span class="unit" id="share-desc">Pour 5 % du CRAYON.PRO (Plafond : 35 %)</span>
                 </div>
 
                 <a class="btn-invest" id="mail-link" href="#">
-                    ✉️ Acheter <span id="btn-percent">0,05 %</span> du CRAYON.PRO
+                    ✉️ Acheter <span id="btn-percent">5 %</span> du CRAYON.PRO
                 </a>
             </div>
-            <p class="invest-note">En cliquant, votre messagerie s'ouvrira pour contacter directement le propriétaire.</p>
+            <p class="invest-note" id="invest-note-text">En cliquant, votre messagerie s'ouvrira pour contacter directement le propriétaire.</p>
         </div>
     </section>
 
@@ -95,7 +132,103 @@
     </footer>
 
     <script>
-        // --- LOGIQUE DESSIN ---
+        // ==========================================
+        // 1. CONFIGURATION SUPABASE
+        // ==========================================
+        const SUPABASE_URL = 'https://vdaxgzzpnujlpyfacapj.supabase.co'; // Ton URL Supabase
+        const SUPABASE_ANON_KEY = 'sb_publishable_YiF9mob5CnVWK92rM5N-9w_MUo0DeB5'; // Ta clé publique/publishable
+        
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        let currentUser = null;
+
+        // Éléments DOM Auth
+        const authModal = document.getElementById('auth-modal');
+        const openAuthBtn = document.getElementById('open-auth-btn');
+        const closeAuthBtn = document.getElementById('close-auth-btn');
+        const authForm = document.getElementById('auth-form');
+        const btnSignup = document.getElementById('btn-signup');
+        const logoutBtn = document.getElementById('logout-btn');
+        const authMessage = document.getElementById('auth-message');
+        const userProfileDiv = document.getElementById('user-profile');
+        const userEmailDisplay = document.getElementById('user-email-display');
+
+        // Ouvrir / Fermer la modale
+        openAuthBtn.addEventListener('click', () => {
+            authModal.style.display = 'flex';
+            authMessage.textContent = '';
+        });
+        closeAuthBtn.addEventListener('click', () => authModal.style.display = 'none');
+        window.addEventListener('click', (e) => {
+            if (e.target === authModal) authModal.style.display = 'none';
+        });
+
+        // Fonction d'inscription
+        btnSignup.addEventListener('click', async () => {
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+
+            if (!email || password.length < 6) {
+                showMsg("Veuillez entrer un email valide et un mot de passe de 6 caractères min.", "error");
+                return;
+            }
+
+            showMsg("Création du compte en cours...", "info");
+            const { data, error } = await supabaseClient.auth.signUp({ email, password });
+
+            if (error) {
+                showMsg("Erreur : " + error.message, "error");
+            } else {
+                showMsg("Compte créé avec succès ! Vous êtes connecté.", "success");
+                setTimeout(() => { authModal.style.display = 'none'; }, 1200);
+            }
+        });
+
+        // Fonction de connexion
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('auth-email').value;
+            const password = document.getElementById('auth-password').value;
+
+            showMsg("Connexion en cours...", "info");
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                showMsg("Identifiants incorrects : " + error.message, "error");
+            } else {
+                showMsg("Connexion réussie !", "success");
+                setTimeout(() => { authModal.style.display = 'none'; }, 800);
+            }
+        });
+
+        // Fonction de déconnexion
+        logoutBtn.addEventListener('click', async () => {
+            await supabaseClient.auth.signOut();
+        });
+
+        // Écouter les changements d'état (Connecté / Déconnecté)
+        supabaseClient.auth.onAuthStateChange((event, session) => {
+            if (session && session.user) {
+                currentUser = session.user;
+                openAuthBtn.style.display = 'none';
+                userProfileDiv.style.display = 'flex';
+                userEmailDisplay.textContent = currentUser.email;
+            } else {
+                currentUser = null;
+                openAuthBtn.style.display = 'inline-block';
+                userProfileDiv.style.display = 'none';
+            }
+            updateOrder();
+        });
+
+        function showMsg(text, type) {
+            authMessage.textContent = text;
+            authMessage.style.color = type === 'error' ? '#ef4444' : (type === 'success' ? '#22c55e' : '#f5f5f7');
+        }
+
+
+        // ==========================================
+        // 2. LOGIQUE DESSIN
+        // ==========================================
         const canvas = document.getElementById('draw-canvas');
         const ctx = canvas.getContext('2d');
         const toggleBtn = document.getElementById('toggle-draw');
@@ -143,9 +276,12 @@
             isPainting = false;
         });
 
-        // --- LOGIQUE SÉLECTEUR D'ACTIONS (MAX 35 % = 700 PARTS DE 0,05 %) ---
+
+        // ==========================================
+        // 3. LOGIQUE SÉLECTEUR D'ACTIONS
+        // ==========================================
         let parts = 1;
-        const maxParts = 700; // 700 * 0,05 % = 35 % maximum
+        const maxParts = 7; // 7 * 5% = 35% maximum
         const ownerEmail = "max.paggi@stanislas-cannes.com";
 
         const minusBtn = document.getElementById('minus-btn');
@@ -155,25 +291,31 @@
         const shareDescEl = document.getElementById('share-desc');
         const btnPercentEl = document.getElementById('btn-percent');
         const mailLink = document.getElementById('mail-link');
+        const investNoteText = document.getElementById('invest-note-text');
 
         function updateOrder() {
-            const percentFormatted = (parts * 0.05).toFixed(2).replace('.', ',');
+            const percent = parts * 5;
             const priceFormatted = (parts * 0.05).toFixed(2).replace('.', ',') + ' €';
             const partLabel = parts > 1 ? 'parts' : 'part';
 
-            qtyDisplay.textContent = `${parts} ${partLabel} (${percentFormatted} %)`;
+            qtyDisplay.textContent = `${parts} ${partLabel} (${percent} %)`;
             totalPriceEl.textContent = priceFormatted;
-            shareDescEl.textContent = `Pour ${percentFormatted} % du CRAYON.PRO (Maximum autorisé : 35 %)`;
-            btnPercentEl.textContent = `${percentFormatted} %`;
+            shareDescEl.textContent = `Pour ${percent} % du CRAYON.PRO (Maximum autorisé : 35 %)`;
+            btnPercentEl.textContent = `${percent} %`;
 
-            // Blocage des boutons aux limites (1 part min, 700 parts max)
+            // Blocage des boutons aux limites (1 part min, 7 parts max)
             minusBtn.disabled = (parts <= 1);
             plusBtn.disabled = (parts >= maxParts);
 
-            // Mise à jour dynamique du lien mailto
-            const subject = encodeURIComponent(`Achat de ${percentFormatted} % de CRAYON.PRO (${priceFormatted})`);
+            // Personnalisation du texte et du lien mailto si l'utilisateur est connecté
+            const clientInfo = currentUser ? `\nCompte client vérifié : ${currentUser.email}` : "";
+            investNoteText.textContent = currentUser 
+                ? `Connecté en tant que ${currentUser.email}. Votre identifiant sera joint à la demande.`
+                : "En cliquant, votre messagerie s'ouvrira pour contacter directement le propriétaire.";
+
+            const subject = encodeURIComponent(`Achat de ${percent} % de CRAYON.PRO (${priceFormatted})`);
             const body = encodeURIComponent(
-                `Bonjour,\n\nJe souhaite acheter ${parts} ${partLabel} (soit ${percentFormatted} %) de l'entreprise CRAYON.PRO au prix total de ${priceFormatted}.\n\nMerci de m'indiquer la démarche à suivre pour finaliser mon achat.\n\nCordialement,`
+                `Bonjour,\n\nJe souhaite acheter ${parts} ${partLabel} (soit ${percent} %) de l'entreprise CRAYON.PRO au prix total de ${priceFormatted}.${clientInfo}\n\nMerci de m'indiquer la démarche à suivre pour finaliser mon achat.\n\nCordialement,`
             );
             mailLink.href = `mailto:${ownerEmail}?subject=${subject}&body=${body}`;
         }
