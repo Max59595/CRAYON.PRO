@@ -456,6 +456,38 @@ h1 {
     color: var(--text-muted);
 }
 
+/* État verrouillé (déconnecté) avec curseur barré */
+.invest-box.locked .selector-row,
+.invest-box.locked .invest-action {
+    opacity: 0.35;
+    filter: grayscale(100%);
+    user-select: none;
+    cursor: not-allowed;
+}
+
+.invest-box.locked .qty-controls,
+.invest-box.locked .btn-invest {
+    pointer-events: none;
+}
+
+.lock-banner {
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px dashed rgba(34, 197, 94, 0.4);
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.lock-banner span {
+    font-size: 0.9rem;
+    color: var(--text-main);
+}
+
 /* Grille Specs */
 .specs {
     position: relative;
@@ -506,31 +538,4 @@ footer {
     color: var(--text-muted);
     font-size: 0.85rem;
     border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* État verrouillé quand l'utilisateur n'est pas connecté */
-.invest-box.locked .selector-row,
-.invest-box.locked .invest-action {
-    opacity: 0.35;
-    pointer-events: none;
-    filter: grayscale(100%);
-    user-select: none;
-}
-
-.lock-banner {
-    background: rgba(34, 197, 94, 0.12);
-    border: 1px dashed rgba(34, 197, 94, 0.4);
-    border-radius: 14px;
-    padding: 14px 18px;
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.lock-banner span {
-    font-size: 0.9rem;
-    color: var(--text-main);
 }
